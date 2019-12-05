@@ -17,6 +17,21 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from box_notation import plot_orbital_boxes
 
+class species:
+    def __init__(self, label, description = None, energy = 0.0, entropy =
+                 None, energy_unit = None, entropy_unit = None, im_freq
+                = None, freq_unit = None):
+        self.label = label
+        if description == None:
+            self.description  = label
+        else:
+            self.description = description
+        self.energy = energy
+        self.entropy = entropy  
+        self.im_freq =im_freq
+        self.energy_unit = 'Ha'
+        self.entropy_unit = 'calmol-1K-1'
+        self.freq_unit = 'cm-1'
 
 class ED:
     def __init__(self, aspect='equal'):
@@ -30,6 +45,7 @@ class ED:
         self.aspect = aspect
         # data
         self.pos_number = 0
+        self.eunit = 'kcalmol-1'
         self.energies = []
         self.positions = []
         self.colors = []
@@ -196,7 +212,10 @@ class ED:
         '''
         fig = plt.figure()
         ax = fig.add_subplot(111, aspect=self.aspect)
-        ax.set_ylabel("Energy / $kcal$ $mol^{-1}$")
+        if self.eunit == 'kcalmol-1':
+            ax.set_ylabel("Energy / $kcal$ $mol^{-1}$")
+        elif self.eunit == 'kJmol-1':
+            ax.set_ylabel("Energy / $kJ$ $mol^{-1}$")
         ax.axes.get_xaxis().set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -217,7 +236,7 @@ class ED:
             ax.hlines(level[0], start, start + self.dimension, color=level[4])
             ax.text(start+self.dimension/2.,  # X
                     level[0]+self.offset,  # Y
-                    level[3],  # self.top_texts
+                    format(level[3], '.1f'),  # self.top_texts
                     horizontalalignment='center',
                     verticalalignment='bottom')
 

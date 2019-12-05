@@ -1,6 +1,12 @@
+
+
 from energydiagram import ED
 from matplotlib.backends.backend_pdf import PdfPages
- 
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+
+
 diagram = ED()
 diagram.add_level(-646.499346248,'Closed Shell Molecule')
 
@@ -21,4 +27,5 @@ diagram.add_link(3,6)
  
 diagram.plot(show_IDs=True)    
 my_fig = diagram.fig
- 
+
+
