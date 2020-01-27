@@ -16,6 +16,35 @@ y|
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from box_notation import plot_orbital_boxes
+from ase.units import Ha, kJ, kcal, mol
+
+
+def Ha_to_kJ(s):
+    return s * Ha * mol / kJ
+def cal_to_kJ(s):
+    return s * kcal / kJ / 1000
+def kcal_to_Ha(s):
+    return s * kcal / Ha / mol 
+
+# Returns energy of [speciae] with respect to [ref_speciae]
+# inclusing zero-point energy i True
+# Inlucing entropy if T > 0
+def get_energy(speciae, ref_speciae, temp, zpe = False): 
+    e = 0
+    s = 0
+    for sp in speciae:
+        if zpe:
+            e = e + sp.energy + kcal_to_Ha(sp.zpe)
+        else:
+            e = e + sp.energy 
+        s = s + sp.entropy
+    for r in ref_speciae:
+        if zpe:
+            e = e - r.energy - kcal_to_Ha(r.zpe)
+        else:
+            e = e - r.energy
+        s = s - r.entropy
+    return Ha_to_kJ(e) - cal_to_kJ(s) * temp  
 
 class species:
     def __init__(self, label, description = None, energy = 0.0, entropy =
