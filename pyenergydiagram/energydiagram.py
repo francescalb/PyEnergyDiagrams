@@ -19,19 +19,23 @@ from box_notation import plot_orbital_boxes
 
 class species:
     def __init__(self, label, description = None, energy = 0.0, entropy =
-                 None, energy_unit = None, entropy_unit = None, im_freq
-                = None, freq_unit = None):
+                 None, zpe = None, energy_unit = 'Ha', entropy_unit =
+                 'calmol-1K-1', zpe_unit = 'kcalmol-1', im_freq = None, 
+                 freq_unit = 'cm-1'):
+
         self.label = label
         if description == None:
             self.description  = label
         else:
             self.description = description
         self.energy = energy
+        self.zpe = zpe
         self.entropy = entropy  
         self.im_freq =im_freq
-        self.energy_unit = 'Ha'
-        self.entropy_unit = 'calmol-1K-1'
-        self.freq_unit = 'cm-1'
+        self.energy_unit =  energy_unit
+        self.entropy_unit = entropy_unit
+        self.zpe_unit = zpe_unit
+        self.freq_unit = freq_unit
 
 class ED:
     def __init__(self, aspect='equal'):
@@ -56,6 +60,7 @@ class ED:
         self.links = []
         self.arrows = []
         self.electons_boxes = []
+        self.bottom_labels = []
         # matplotlib fiugre handlers
         self.fig = None
         self.ax = None
@@ -187,8 +192,17 @@ class ED:
         y = self.energies[level_id]
         self.electons_boxes.append((x, y, boxes, electrons, side, spacing_f))
 
+    def add_bottom_label(self, level_id, height, text):
+        '''
+        Method of ED class
+        '''
+        self.__auto_adjust()
+        x = self.positions[level_id]*(self.dimension+self.space) + self.dimension*0.5
+        y = -200
+        self.bottom_labels.append((x, y, text))
 
-    def plot(self, show_IDs=False):
+
+    def plot(self, show_IDs=False, show_labels = True):
         '''
         Method of ED class
         Plot the energy diagram. Use show_IDs=True for showing the IDs of the
@@ -234,32 +248,37 @@ class ED:
         for level in data:
             start = level[1]*(self.dimension+self.space)
             ax.hlines(level[0], start, start + self.dimension, color=level[4])
+            if type(level[3]) == float:
+                toptxt = format(level[3], '.1f')#self.top_text, formatfix for energy
+            else:
+                toptxt = level[3] #leave as if, if not float
+
             ax.text(start+self.dimension/2.,  # X
                     level[0]+self.offset,  # Y
-                    format(level[3], '.1f'),  # self.top_texts
+                    toptxt, # self.top_text
                     horizontalalignment='center',
                     verticalalignment='bottom')
+            if show_labels:
+                ax.text(start + self.dimension,  # X
+                        level[0],  # Y
+                        level[5],  # self.bottom_text
+                        horizontalalignment='left',
+                        verticalalignment='center',
+                        color=self.color_bottom_text)
 
-            ax.text(start + self.dimension,  # X
-                    level[0],  # Y
-                    level[5],  # self.bottom_text
-                    horizontalalignment='left',
-                    verticalalignment='center',
-                    color=self.color_bottom_text)
+                ax.text(start,  # X
+                        level[0],  # Y
+                        level[6],  # self.bottom_text
+                        horizontalalignment='right',
+                        verticalalignment='center',
+                        color=self.color_bottom_text)
 
-            ax.text(start,  # X
-                    level[0],  # Y
-                    level[6],  # self.bottom_text
-                    horizontalalignment='right',
-                    verticalalignment='center',
-                    color=self.color_bottom_text)
-
-            ax.text(start + self.dimension/2.,  # X
-                    level[0] - self.offset*2,  # Y
-                    level[2],  # self.bottom_text
-                    horizontalalignment='center',
-                    verticalalignment='top',
-                    color=self.color_bottom_text)
+                ax.text(start + self.dimension/2.,  # X
+                        level[0] - self.offset*2,  # Y
+                        level[2],  # self.bottom_text
+                        horizontalalignment='center',
+                        verticalalignment='top',
+                        color=self.color_bottom_text)
         if show_IDs:
             # for showing the ID allowing the user to identify the level
             for ind, level in enumerate(data):
@@ -306,9 +325,18 @@ class ED:
             x, y, boxes, electrons, side, spacing_f = box
             plot_orbital_boxes(ax, x, y, boxes, electrons, side, spacing_f)
 
+        for t in self.bottom_labels:
+            level_id, y, text  = t
+            #start = level_id*(self.dimension+self.space)
+            #print(start + self.dimension/2., y, text)
+            #ax.text(start + self.dimension/2., y, text)
+            ax.text(level_id, y, text, horizontalalignment='center')
+
+
         # Return fig and ax
         self.ax = ax
         self.fig = fig
+
 
     def __auto_adjust(self):
         '''
